@@ -108,4 +108,5 @@ jobs:
           echo "$AZURE_SSH_BACKEND_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.BACKEND_VM_USER }}@${{ secrets.BACKEND_VM_HOST }} \
-            "sudo docker-compose down || true" || true
+            "cd backend && \
+             sudo docker-compose down" || true
