@@ -24,7 +24,8 @@ jobs:
             "cd frontend && \
              git pull origin main && \
              npm install && \
-             nohup npm run dev -- --host > frontend.log 2>&1 &"
+             nohup npm run dev -- --host > frontend.log 2>&1 & &&
+             exit"
 
       - name: Wait for Frontend to be Available
         run: |
