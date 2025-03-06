@@ -14,18 +14,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Start the Frontend on Frontend VM
-      - name: Start Frontend on Frontend VM
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.FRONTEND_VM_HOST }}
-          username: ${{ secrets.FRONTEND_VM_USER }}
-          key: ${{ secrets.FRONTEND_VM_KEY }}
-          script: |
-            cd /home/${{ secrets.AZURE_VM_USER }}/frontend
-            git pull origin main
-            npm install
-            nohup npm run dev -- --host > frontend.log 2>&1 &
+      - name: Start Frontend
+        env:
+          AZURE_SSH_FRONTEND_KEY: ${{ secrets.FRONTEND_VM_KEY }}
+          AZURE_VM_USERNAME: ${{ secrets.FRONTEND_VM_USER }}
+          AZURE_VM_IP: ${{ secrets. FRONTEND_VM_IP }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$AZURE_SSH_FRONTEND_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_IP }} \
+            "cd frontend && \
+             git pull origin main && \
+             npm install && \
+             nohup npm run dev -- --host > frontend.log 2>&1 &"
 
       # Start the Backend on Backend VM
       - name: Start Backend on Backend VM
