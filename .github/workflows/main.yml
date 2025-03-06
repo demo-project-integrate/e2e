@@ -17,13 +17,11 @@ jobs:
       - name: Start Frontend
         env:
           AZURE_SSH_FRONTEND_KEY: ${{ secrets.FRONTEND_VM_KEY }}
-          FRONTEND_VM_USER: ${{ secrets.FRONTEND_VM_USER }}
-          FRONTEND_VM_IP: ${{ secrets.FRONTEND_VM_IP }}
         run: |
           mkdir -p ~/.ssh
           echo "$AZURE_SSH_FRONTEND_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.FRONTEND_VM_USER }}@${{ secrets.FRONTEND_VM_IP }} \
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.FRONTEND_VM_USER }}@${{ secrets.FRONTEND_VM_HOST }} \
             "cd frontend && \
              git pull origin main && \
              npm install && \
