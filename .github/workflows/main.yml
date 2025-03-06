@@ -73,4 +73,4 @@ jobs:
           echo "$AZURE_SSH_FRONTEND_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.FRONTEND_VM_USER }}@${{ secrets.FRONTEND_VM_HOST }} \
-            "if [ -f frontend.pid ]; then kill \$(cat frontend.pid) && rm frontend.pid; else pkill -f 'node .*vite' || echo 'Frontend already stopped'; fi"
+            "pkill -f 'node .*vite' && exit"
