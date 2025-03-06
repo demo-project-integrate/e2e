@@ -17,6 +17,8 @@ jobs:
       - name: Start Frontend
         env:
           AZURE_SSH_FRONTEND_KEY: ${{ secrets.FRONTEND_VM_KEY }}
+          FRONTEND_VM_USER: ${{ secrets.FRONTEND_VM_USER }}
+          FRONTEND_VM_IP: ${{ secrets.FRONTEND_VM_IP }}
         run: |
           mkdir -p ~/.ssh
           echo "$AZURE_SSH_FRONTEND_KEY" > ~/.ssh/id_rsa
