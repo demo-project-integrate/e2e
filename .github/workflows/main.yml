@@ -24,7 +24,8 @@ jobs:
             "cd frontend && \
              git pull origin main && \
              npm install && \
-             nohup npm run dev & exit"
+             nohup npm run dev -- --host > frontend.log 2>&1 & echo \$! > frontend.pid && \
+             disown"
 
       - name: Wait for Frontend to be Available
         run: |
