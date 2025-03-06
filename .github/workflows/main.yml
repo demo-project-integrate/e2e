@@ -1,0 +1,69 @@
+name: E2E Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Start the Backend on Backend VM
+      - name: Start Backend on Backend VM
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.BACKEND_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.AZURE_VM_USER }}/backend
+            git pull origin main
+            npm install
+            nohup npm start > backend.log 2>&1 &
+
+      # Start the Frontend on Frontend VM
+      - name: Start Frontend on Frontend VM
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.FRONTEND_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.AZURE_VM_USER }}/frontend
+            git pull origin main
+            npm install
+            nohup npm run dev -- --host > frontend.log 2>&1 &
+
+      # Wait for Frontend & Backend to be Ready
+      - name: Wait for Backend to be Available
+        run: |
+          until curl -s --head --request GET http://${{ secrets.BACKEND_VM_HOST }}:5000 | grep "200 OK"; do
+            echo "Waiting for backend..."
+            sleep 5
+          done
+
+      - name: Wait for Frontend to be Available
+        run: |
+          until curl -s --head --request GET http://${{ secrets.FRONTEND_VM_HOST }}:5173 | grep "200 OK"; do
+            echo "Waiting for frontend..."
+            sleep 5
+          done
+
+      # Run Cypress Tests on E2E VM
+      - name: Run Cypress Tests
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.E2E_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.AZURE_VM_USER }}/e2e-tests
+            git pull origin main
+            npm install
+            CYPRESS_baseUrl=http://${{ secrets.FRONTEND_VM_HOST }}:5173 npx cypress run
