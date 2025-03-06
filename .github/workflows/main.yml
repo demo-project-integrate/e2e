@@ -37,8 +37,6 @@ jobs:
           script: |
             cd /home/${{ secrets.AZURE_VM_USER }}/backend
             git pull origin main
-            npm install
-            nohup npm start > backend.log 2>&1 &
 
       # Wait for Frontend & Backend to be Ready
       - name: Wait for Backend to be Available
