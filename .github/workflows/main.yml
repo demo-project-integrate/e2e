@@ -7,9 +7,8 @@ on:
   pull_request:
 
 jobs:
-  e2e-tests:
+  start_frontend:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -27,31 +26,25 @@ jobs:
              npm install && \
              nohup npm run dev -- --host > frontend.log 2>&1 &"
 
-      # Start the Backend on Backend VM
-      - name: Start Backend on Backend VM
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.BACKEND_VM_HOST }}
-          username: ${{ secrets.BACKEND_VM_USER }}
-          key: ${{ secrets.BACKEND_VM_KEY }}
-          script: |
-            cd /home/${{ secrets.AZURE_VM_USER }}/backend
-            git pull origin main
-
-      # Wait for Frontend & Backend to be Ready
-      - name: Wait for Backend to be Available
-        run: |
-          until curl -s --head --request GET http://${{ secrets.BACKEND_VM_HOST }}:5000 | grep "200 OK"; do
-            echo "Waiting for backend..."
-            sleep 5
-          done
-
       - name: Wait for Frontend to be Available
         run: |
           until curl -s --head --request GET http://${{ secrets.FRONTEND_VM_HOST }}:5173 | grep "200 OK"; do
             echo "Waiting for frontend..."
             sleep 5
           done
+
+  start_backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: [start_frontend, start_backend]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       # Run Cypress Tests on E2E VM
       - name: Run Cypress Tests
@@ -65,3 +58,18 @@ jobs:
             git pull origin main
             npm install
             CYPRESS_baseUrl=http://${{ secrets.FRONTEND_VM_HOST }}:5173 npx cypress run
+
+  stop_frontend:
+    runs-on: ubuntu-latest
+    needs: e2e-tests  # Run this only after E2E tests
+    if: always() 
+    steps:
+      - name: Stop Frontend
+        env:
+          AZURE_SSH_FRONTEND_KEY: ${{ secrets.FRONTEND_VM_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$AZURE_SSH_FRONTEND_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.FRONTEND_VM_USER }}@${{ secrets.FRONTEND_VM_HOST }} \
+            "pkill -f 'npm run dev' || echo 'Frontend not running'"
