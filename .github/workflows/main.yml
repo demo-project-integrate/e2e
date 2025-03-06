@@ -39,6 +39,26 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Start Backend
+        env:
+          AZURE_SSH_BACKEND_KEY: ${{ secrets.BACKEND_VM_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$AZURE_SSH_BACKEND_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.BACKEND_VM_USER }}@${{ secrets.BACKEND_VM_HOST }} \
+            "cd backend && \
+             sudo mvn clean install && \
+             sudo docker-compose up -d --build && \
+             exit 0" &
+
+      - name: Wait for Frontend to be Available
+        run: |
+          until curl -s --head --request GET http://${{ secrets.FRONTEND_VM_HOST }}:5173 | grep "200 OK"; do
+            echo "Waiting for frontend..."
+            sleep 5
+          done
       
   e2e-tests:
     runs-on: ubuntu-latest
@@ -67,10 +87,10 @@ jobs:
     steps:
       - name: Stop Frontend
         env:
-          AZURE_SSH_FRONTEND_KEY: ${{ secrets.FRONTEND_VM_KEY }}
+          AZURE_SSH_BACKEND_KEY: ${{ secrets.BACKEND_VM_KEY }}
         run: |
           mkdir -p ~/.ssh
-          echo "$AZURE_SSH_FRONTEND_KEY" > ~/.ssh/id_rsa
+          echo "$AZURE_SSH_BACKEND_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.FRONTEND_VM_USER }}@${{ secrets.FRONTEND_VM_HOST }} \
-            "pkill -f 'node .*vite' || true" || true
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.BACKEND_VM_USER }}@${{ secrets.BACKEND_VM_HOST }} \
+            "sudo docker-compose down' || true" || true
