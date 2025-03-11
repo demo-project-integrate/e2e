@@ -1,15 +1,8 @@
 name: E2E Tests
 
 on:
-  push:
-    branches:
-      - main
-  workflow_run:
-    workflows: [Deploy to Azure VM]
-    branches:
-      - main
-    types:
-      - completed
+  repository_dispatch:
+    types: [trigger_e2e]
 
 jobs:
   start_frontend:
