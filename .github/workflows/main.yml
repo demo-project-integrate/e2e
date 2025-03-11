@@ -56,6 +56,36 @@ jobs:
             echo "Waiting for backend..."
             sleep 5
           done
+
+  clone_e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up SSH for Azure VM
+        run: |
+          mkdir -p ~/.ssh
+          echo "$FRONTEND_VM_KEY" > ~/.ssh/id_rsa_azure
+          chmod 600 ~/.ssh/id_rsa_azure
+          ssh-keyscan -H ${{ secrets.FRONTEND_VM_HOST }} >> ~/.ssh/known_hosts
+        env:
+          FRONTEND_VM_KEY: ${{ secrets.FRONTEND_VM_KEY }}
+
+      - name: Clone E2E Repo
+        env:
+          FRONTEND_VM_KEY: ${{ secrets.FRONTEND_VM_KEY }}
+          FRONTEND_VM_USER: ${{ secrets.FRONTEND_VM_USER }}
+          FRONTEND_VM_HOST: ${{ secrets. FRONTEND_VM_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$FRONTEND_VM_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.FRONTEND_VM_USER }}@${{ secrets.FRONTEND_VM_HOST }} \
+            "chmod 600 ~/.ssh/id_rsa && \
+             echo -e 'Host github.com\n  HostName github.com\n  IdentityFile ~/.ssh/id_rsa' >> ~/.ssh/config && \
+             git clone git@github.com:${{ github.repository }}.git e2e || \
+             (cd e2e && git pull origin main)"
       
   e2e-tests:
     runs-on: ubuntu-latest
