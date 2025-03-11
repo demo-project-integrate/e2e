@@ -55,7 +55,7 @@ jobs:
 
       - name: Wait for Backend to be Available
         run: |
-          until curl -s --head --request GET http://${{ secrets.BACKEND_VM_HOST }}:5000 | grep "200 OK"; do
+          until curl -s --head --request GET http://${{ secrets.BACKEND_VM_HOST }}:5000/api/product | grep "200 OK"; do
             echo "Waiting for backend..."
             sleep 5
           done
