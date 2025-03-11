@@ -1,10 +1,10 @@
 name: E2E Tests
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_run:
+    workflows: [Deploy to Azure VM]
+    types:
+      - completed
 
 jobs:
   start_frontend:
