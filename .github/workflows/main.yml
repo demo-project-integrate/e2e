@@ -6,6 +6,8 @@ on:
       - main
   workflow_run:
     workflows: [Deploy to Azure VM]
+    branches:
+      - main
     types:
       - completed
 
