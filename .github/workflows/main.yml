@@ -50,8 +50,7 @@ jobs:
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.BACKEND_VM_USER }}@${{ secrets.BACKEND_VM_HOST }} \
             "cd backend && \
              sudo mvn clean install -DskipTests && \
-             sudo docker-compose up -d --build && \
-             exit 0" &
+             sudo docker-compose up -d --build" &
 
       - name: Wait for Backend to be Available
         run: |
