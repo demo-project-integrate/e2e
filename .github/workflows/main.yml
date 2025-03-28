@@ -108,7 +108,7 @@ jobs:
             cd /home/${{ secrets.AZURE_VM_USER }}/e2e-tests
             git pull origin main
             npm install
-            npx cypress run
+            npx cypress run > cypress.log 2>&1
 
   stop_frontend:
     runs-on: ubuntu-latest
