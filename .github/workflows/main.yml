@@ -92,7 +92,7 @@ jobs:
       
   e2e-tests:
     runs-on: ubuntu-latest
-    needs: [start_frontend, start_backend]
+    needs: [start_frontend, start_backend, clone_e2e]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
