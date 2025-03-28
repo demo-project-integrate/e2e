@@ -103,9 +103,9 @@ jobs:
           AZURE_SSH_KEY: ${{ secrets.FRONTEND_VM_KEY }}
         run: |
           mkdir -p ~/.ssh
-          echo "$AZURE_SSH_KEY" > ~/.ssh/id_rsa_e2e
-          chmod 600 ~/.ssh/id_rsa_e2e
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.FRONTEND_VM_USER }}@${{ secrets.FRONTEND_VM_HOST }} \
+          echo "$AZURE_SSH_KEY" > ~/.ssh/id_rsa_test
+          chmod 600 ~/.ssh/id_rsa_test
+          ssh -i ~/.ssh/id_rsa_test -o StrictHostKeyChecking=no ${{ secrets.FRONTEND_VM_USER }}@${{ secrets.FRONTEND_VM_HOST }} \
             "cd e2e && \
              git pull origin main && \
              npm install && \
