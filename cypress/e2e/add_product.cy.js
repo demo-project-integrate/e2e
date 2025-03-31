@@ -13,7 +13,7 @@ describe('Add Product with Authentication', () => {
     it('should successfully add a product', () => {
       cy.get('#productName').type('Test Product');
       cy.get('#productDesc').type('This is a test product description.');
-      cy.get('#hcnCode').type('123456');
+      cy.get('#hcnCode').type('12345');
       cy.get('#productPrice').type('99.99');
       const token = Cypress.env('authToken');
       cy.log("Token from Cypress.env:", token);
